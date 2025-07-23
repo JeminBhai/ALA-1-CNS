@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Secure Messenger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Code', monospace;
+      background: radial-gradient(circle at 50% 30%, #0d1b2a, #000814);
+      color: #00f0ff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(0, 17, 34, 0.75);
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 20px #00f0ff30;
+      border-radius: 20px;
+      padding: 30px 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      text-align: center;
+      margin-bottom: 25px;
+      color: #00f0ff;
+      text-shadow: 0 0 10px #00f0ff99;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(-20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    label {
+      margin-top: 1.2rem;
+      display: block;
+      font-size: 0.9rem;
+      color: #66fcf1;
+    }
+
+    textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #00f0ff;
+      border-radius: 10px;
+      padding: 10px;
+      color: #00f0ff;
+      resize: none;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin: 12px 0;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #00f0ff, #0fffc2);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px #00f0ff99;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #0fffc2, #00f0ff);
+      transform: scale(1.03);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .copy-btn {
+      margin-top: -8px;
+      float: right;
+      font-size: 0.7rem;
+      background: none;
+      border: none;
+      color: #00f0ff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #decrypted {
+      background-color: rgba(0, 255, 255, 0.08);
+      border: 1px solid #00f0ff88;
+      padding: 12px;
+      border-radius: 10px;
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 25px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 AI Secure Messenger</h1>
+
+    <label for="message">Your Message</label>
+    <textarea id="message" rows="3" placeholder="Type something private..."></textarea>
+
+    <button onclick="encryptMessage()">Encrypt 🔐</button>
+
+    <label for="encrypted_key">Encrypted AES Key</label>
+    <textarea id="encrypted_key" rows="2" readonly></textarea>
+    <button class="copy-btn" onclick="copyText('encrypted_key')">Copy</button>
+
+    <label for="ciphertext">Encrypted Message</label>
+    <textarea id="ciphertext" rows="3" readonly></textarea>
+    <button class="copy-btn" onclick="copyText('ciphertext')">Copy</button>
+
+    <button onclick="decryptMessage()">Decrypt 🔓</button>
+
+    <label>Decrypted Message</label>
+    <div id="decrypted">Waiting for decryption result...</div>
+  </div>
+
+  <script>
+    async function encryptMessage() {
+      const message = document.getElementById("message").value;
+      const response = await fetch('/encrypt', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message })
+      });
+      const result = await response.json();
+      document.getElementById("encrypted_key").value = result.encrypted_key;
+      document.getElementById("ciphertext").value = result.ciphertext;
+    }
+
+    async function decryptMessage() {
+      const encrypted_key = document.getElementById("encrypted_key").value;
+      const ciphertext = document.getElementById("ciphertext").value;
+      const response = await fetch('/decrypt', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ encrypted_key, ciphertext })
+      });
+      const result = await response.json();
+      document.getElementById("decrypted").innerText = result.decrypted_message;
+    }
+
+    function copyText(id) {
+      const textArea = document.getElementById(id);
+      textArea.select();
+      navigator.clipboard.writeText(textArea.value);
+      alert("Copied!");
+    }
+  </script>
+</body>
+</html>
